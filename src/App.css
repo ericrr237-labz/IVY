@@ -1,0 +1,54 @@
+.App {
+  text-align: center;
+}
+
+.App-logo {
+  height: 40vmin;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .App-logo {
+    animation: App-logo-spin infinite 20s linear;
+  }
+}
+
+.App-header {
+  background-color: #282c34;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: calc(10px + 2vmin);
+  color: white;
+}
+
+:root {
+  --fc-border-color: rgba(255,255,255,0.08);
+  --fc-page-bg-color: #0b0d12;
+  --fc-neutral-bg-color: rgba(255,255,255,0.03);
+  --fc-list-event-hover-bg-color: rgba(255,255,255,0.06);
+  --fc-event-bg-color: #2563eb;   /* blue-600 */
+  --fc-event-border-color: #2563eb;
+  --fc-event-text-color: #fff;
+  --fc-today-bg-color: rgba(37, 99, 235, 0.12); /* subtle highlight */
+}
+.fc .fc-toolbar-title { color: #e5e7eb; }          /* text-gray-200 */
+.fc .fc-button { background: rgba(255,255,255,0.08); border: 0; }
+.fc .fc-button:hover { background: rgba(255,255,255,0.12); }
+.fc .fc-col-header-cell-cushion,
+.fc .fc-daygrid-day-number { color: #cbd5e1; }     /* text-gray-300 */
+
+.App-link {
+  color: #61dafb;
+}
+
+@keyframes App-logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
