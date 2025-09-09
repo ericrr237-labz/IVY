@@ -34,6 +34,11 @@ app.use("/api/feedback", feedbackRouter);
 app.use("/api/marketing", marketingRouter);
 app.use("/api/settings", settingsRouter);
 
+
+app.get("/healthz", (req, res) => res.status(200).send("OK"));
+app.get("/", (req, res) => {
+  res.type("text/plain").send("IVY API is running. Try /api/profile, /api/metrics, /api/feedback...");
+});
 app.get("/api/whoami", (req, res) => res.json({ ok: true, service: "IVY API" }));
 
 // ensure data file exists
