@@ -16,7 +16,7 @@ function Home() {
         {/* Hero */}
         <div className="min-h-screen flex flex-col justify-center items-center p-10">
           <h1 className="text-5xl font-bold text-blue-500 mb-4">AI business solution personalized for you</h1>
-          <h2 className="text-3xl mb-4">Welcome to AIVI</h2>
+          <h2 className="text-3xl mb-4">Welcome to IVY</h2>
           <p className="text-gray-300 max-w-xl text-center mb-6">
             Here we turn your business into a revenue-generating machine. Discover the future of intelligent automation and see how you can automate and scale effortlessly.
           </p>
@@ -43,7 +43,7 @@ function Home() {
         <div className="flex justify-center my-12">
           <img
             src={dashboardMockup}
-            alt="AIVI Dashboard Mockup"
+            alt="IVY Dashboard Mockup"
             className="rounded-xl shadow-lg hover:shadow-blue-500/30 transition duration-300 w-full max-w-4xl"
           />
         </div>
@@ -52,7 +52,7 @@ function Home() {
         <div className="min-h-[50vh] bg-[#0f1115] text-white flex flex-col justify-center items-center p-10">
           <h2 className="text-4xl md:text-5xl font-bold text-blue-500 mb-4 text-center">Who is this for?</h2>
           <p className="text-gray-400 text-lg max-w-2xl mx-auto mb-8 text-center">
-            AIVI is built for ambitious business owners who want to scale faster, automate smarter, and dominate their market.
+            IVY is built for ambitious business owners who want to scale faster, automate smarter, and dominate their market.
           </p>
           <ul className="text-gray-300 space-y-4 text-left max-w-md">
             <li className="flex items-start"><span className="text-green-400 mr-2">✔</span> Agencies and consultancies scaling from $10k to $100k+ months</li>

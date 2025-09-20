@@ -48,7 +48,7 @@ export default function Profile() {
 
     (async () => {
       try {
-        const res = await fetch(PROFILE_URL);
+        const res = await apiFetch('/profile');
         const json = await res.json();
         if (!canceled && json?.ok && json?.data) {
           setForm((f) => ({ ...f, ...json.data }));
@@ -85,7 +85,7 @@ export default function Profile() {
   const handleSave = async () => {
     try {
       setSaving(true);
-      const res = await fetch(PROFILE_URL, {
+      const res = await apiFetch('/profile', {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(form),

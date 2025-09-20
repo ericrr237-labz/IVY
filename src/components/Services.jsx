@@ -18,7 +18,7 @@ function Services() {
       <div className="bg-[#1a1e27] p-8 rounded-xl shadow-lg mb-8 hover:shadow-blue-500/30 hover:scale-105 transition transform duration-300 ease-in-out">
         <h2 className="text-2xl font-semibold text-blue-400 mb-3">Customer Support + Website Building & Maintenance</h2>
         <p className="text-gray-300">
-          Deliver unforgettable experiences — even when you're offline. AIVI’s AI-powered support handles customer questions,
+          Deliver unforgettable experiences — even when you're offline. IVY’s AI-powered support handles customer questions,
           bookings, and issues 24/7, keeping your reputation sharp and your clients happy. We also design and maintain a
           high-performing website that reflects your brand and effortlessly supports your growth.
         </p>
@@ -28,7 +28,7 @@ function Services() {
       <div className="bg-[#1a1e27] p-8 rounded-xl shadow-lg mb-8 hover:shadow-blue-500/30 hover:scale-105 transition transform duration-300 ease-in-out">
         <h2 className="text-2xl font-semibold text-blue-400 mb-3">Performance Insights & Profit Maximization</h2>
         <p className="text-gray-300">
-          See exactly where you're winning — and where you're leaving money on the table. With AIVI’s deep performance analytics,
+          See exactly where you're winning — and where you're leaving money on the table. With IVY’s deep performance analytics,
           you'll get clear, actionable insights on revenue impact, conversion rates, and client retention. Our system doesn’t just
           report — it recommends exactly how to boost profits and streamline your operations.
         </p>
@@ -49,7 +49,7 @@ function Services() {
         <h2 className="text-2xl font-semibold text-blue-400 mb-3">Business Automation & AI Efficiency</h2>
         <p className="text-gray-300">
           Stop wasting time on repetitive tasks — let your AI handle it. From automating lead qualification and follow-ups to backend
-          workflows and data updates, AIVI ensures your business runs like a high-precision machine. Free up your team to focus
+          workflows and data updates, IVY ensures your business runs like a high-precision machine. Free up your team to focus
           on what really matters.
         </p>
       </div>

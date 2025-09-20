@@ -73,7 +73,7 @@ function App() {
     <Router>
       {/* Top Navbar for the marketing site */}
       <nav className="bg-[#0f1115] text-white p-6 flex justify-between items-center shadow-md">
-        <div className="text-2xl font-bold tracking-wide text-blue-500">AIVI</div>
+        <div className="text-2xl font-bold tracking-wide text-blue-500">IVY</div>
         <div className="space-x-6 text-lg">
           <TopNavLink to="/">Home</TopNavLink>
           <TopNavLink to="/pricing">Pricing</TopNavLink>
@@ -102,46 +102,7 @@ function App() {
         <Route path="/contact" element={<Contact />} />
 
         {/* Login route (redirects to dashboard if already logged in) */}
-        <Route
-          path="/login"
-          element={
-            isLoggedIn ? (
-              <Navigate to="/dashboard" />
-            ) : (
-              <div className="min-h-screen bg-gradient-to-br from-black to-[#0f1115] text-white flex flex-col justify-center items-center p-6">
-                <h1 className="text-5xl font-bold mb-4 text-blue-500">Login to AIVI</h1>
-                <p className="text-gray-400 mb-8 text-center max-w-md">
-                  Unlock your custom AI dashboard and start scaling your business.
-                </p>
-                <form
-                  onSubmit={handleLogin}
-                  className="w-full max-w-sm space-y-4 bg-[#1a1e27] p-6 rounded-lg shadow-lg"
-                >
-                  <input
-                    type="email"
-                    placeholder="Email"
-                    className="w-full p-3 rounded bg-[#2a2f3c] text-white focus:outline-none"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                  />
-                  <input
-                    type="password"
-                    placeholder="Password"
-                    className="w-full p-3 rounded bg-[#2a2f3c] text-white focus:outline-none"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                  />
-                  <button
-                    type="submit"
-                    className="w-full bg-blue-600 p-3 rounded font-semibold hover:bg-blue-700 transition"
-                  >
-                    Login
-                  </button>
-                </form>
-              </div>
-            )
-          }
-        />
+        <Route path="/login" element={localStorage.getItem("auth") ? <Navigate to="/dashboard" /> : <Login />} />
 
         {/* App routes (gated) */}
         <Route
