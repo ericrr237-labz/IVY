@@ -11,7 +11,7 @@ function Contact() {
     >
       <h1 className="text-5xl font-bold text-blue-500 mb-4 text-center">Book Your AI Readiness Call</h1>
       <p className="text-gray-400 text-lg max-w-xl mx-auto mb-8 text-center">
-        This isn’t a generic demo. On this call, we’ll map out exactly how AIVI can automate and scale your business — fully personalized to your needs.
+        This isn’t a generic demo. On this call, we’ll map out exactly how IVY can automate and scale your business — fully personalized to your needs.
       </p>
 
       <div className="bg-[#1a1e27] p-8 rounded-xl shadow-lg w-full max-w-xl text-center hover:shadow-blue-500/30 hover:scale-105 transition transform duration-300 ease-in-out">

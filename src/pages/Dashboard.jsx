@@ -12,8 +12,8 @@ import RecordFormModal from "../components/RecordFormModal";
 import MarketingForm from "../components/MarketingForm";
 import ivybot from "../assets/ivy-bot.png";
 import { useNavigate } from "react-router-dom";
-import { getRecords, createRecord } from "../lib/api";
 import Sidebar from "../components/Sidebar";
+import { getRecords, createRecord, getCLTV } from "../lib/api";
 
 
 
@@ -27,73 +27,61 @@ export default function Dashboard() {
   const [showCACModal, setShowCACModal] = useState(false);
   const [timeRange, setTimeRange] = useState("7");
   const [useSample, setUseSample] = useState(false);
-  const marketingData = records.filter(r => r.key === 'marketing');
   const [sidebarMode, setSidebarMode] = useState("menu"); // 'menu' | 'chat'
   const navigate = useNavigate();
   const [cltv, setCltv] = useState(null);
   const [cltvLoading, setCltvLoading] = useState(true);
   const [cltvErr, setCltvErr] = useState("");
- 
 
-  useEffect(() => {
-  const loadCltv = async () => {
-    try {
-      const res = await fetch("/api/metrics/cltv"); // or full URL if no proxy
-      const data = await res.json();
-      if (!res.ok) throw new Error(data?.error || "Failed to fetch CLTV");
-      setCltv(data.cltv);
-    } catch (e) {
-      setCltvErr(e.message || String(e));
-    } finally {
-      setCltvLoading(false);
-    }
-  };
-  loadCltv();
-}, []);
+const recordsArr = Array.isArray(records) ? records : [];
 
-  const fetchRecordsAgain = () => {
-  fetch ('/api/records')
-    .then(res => res.json())
-    .then(data => setRecords(data));
-};
+
+ useEffect(() => {
+   const loadCltv = async () => {
+     try {
+      const data = await getCLTV();
+       setCltv(typeof data === "number" ? data : (data?.value ?? data?.cltv ?? null));
+     } catch (e) {
+       setCltvErr(e.message || String(e));
+     } finally {
+       setCltvLoading(false);
+     }
+   };
+   loadCltv();
+   }, []);
+
+ const fetchRecordsAgain = async () => {
+   try {
+     const list = await getRecords();
+     setRecords(Array.isArray(list) ? list : []);
+   } catch (e) {
+     console.error(e);
+   }
+ };
 
   useEffect(() => {
   getRecords().then(setRecords).catch(console.error);
 }, []);
 
 
-  useEffect(() => {
-    const load = async () => {
-      try {
-        // If you don't have a Vite proxy, use the full URL: http://localhost:5001/api/metrics/cltv
-        const res = await fetch("/api/metrics/cltv");
-        const data = await res.json();
-        if (!res.ok) throw new Error(data?.error || "Failed to fetch CLTV");
-        setCltv(data.cltv);
-      } catch (e) {
-        setCltvErr(e.message);
-      } finally {
-        setCltvLoading(false);
-      }
-    };
-    load();
-  }, []);
-
 const formatMoney = (n) =>
     typeof n === "number"
       ? n.toLocaleString(undefined, { style: "currency", currency: "USD" })
       : "-";
 const handleMemorySaved = (newRec) => setRecords((prev) => [newRec, ...prev]);
-const revenueRecords = records.filter((r) => r.type === "revenue");
-const expenseRecords = records.filter((r) => r.type === "expenses");
-const cogsRecords = records.filter((r) => r.type === "cogs");
-const marketingRecords = records.filter((r) => r.key === "marketing");
+const revenueRecords = recordsArr.filter(r => (r.key || r.type) === "revenue");
+const expenseRecords = recordsArr.filter(r => {
+  const k = (r.key || r.type);
+  return k === "expense" || k === "expenses";
+});
+const cogsRecords = recordsArr.filter(r => (r.key || r.type) === "cogs");
+const marketingRecords = recordsArr.filter(r => (r.key || r.type) === "marketing")
 
 const totalRevenue = revenueRecords.reduce((sum, r) => sum + Number(r.value || 0), 0);
 const totalExpensesRaw = expenseRecords.reduce((sum, r) => sum + Number(r.value || 0), 0);
 const totalCOGS = cogsRecords.reduce((sum, r) => sum + Number(r.value || 0), 0);
 const totalExpenses = totalExpensesRaw + totalCOGS;
-
+  const marketingData = recordsArr.filter(r => (r.key || r.type) === "marketing");
 const totalAdSpend = marketingRecords.reduce(
   (sum, r) => sum + Number(r.marketingSpend || 0),
   0
@@ -130,34 +118,46 @@ const CLTC = 0; // placeholder
 
 const safeCAC = isNaN(CAC) ? 0 : CAC;
 console.log("✅ CAC:", CAC, "SafeCAC:", safeCAC, "Type:", typeof safeCAC);
+const buildChartData = () => {
+  const source = useSample
+    ? [
+        { date: "Day 1", revenue: 12000, netProfit: 3000 },
+        { date: "Day 2", revenue: 15000, netProfit: 5000 },
+        { date: "Day 3", revenue: 18000, netProfit: 4500 }
+      ]
+    : recordsArr;
 
-  const buildChartData = () => {
+  const revMap = {}, expMap = {};
 
-    console.log("🧪 CAC raw:", CAC, "Type:", typeof CAC);
+  source.forEach((r) => {
+    if (useSample) {
+      revMap[r.date] = (revMap[r.date] || 0) + (r.revenue || 0);
+      return;
+    }
+    const kind = (r.key || r.type) || "";
+    const dateKey = r.date ? new Date(r.date).toLocaleDateString() : "";
+    const val = Number(r.value ?? r.amount ?? 0);
 
-    const source = useSample
-      ? [
-          { date: "Day 1", revenue: 12000, netProfit: 3000 },
-          { date: "Day 2", revenue: 15000, netProfit: 5000 },
-          { date: "Day 3", revenue: 18000, netProfit: 4500 }
-        ]
-      : records;
-    const revMap = {}, expMap = {};
-    source.forEach((r) => {
-      const dateKey = useSample ? r.date : new Date(r.createdAt).toLocaleDateString();
-      const val = useSample ? r.revenue : Number(r.value || 0);
-      if (r.type === "revenue" || useSample) revMap[dateKey] = (revMap[dateKey] || 0) + val;
-      if ((r.type === "expenses" || r.type === "cogs") && !useSample) expMap[dateKey] = (expMap[dateKey] || 0) + val;
-    });
-    const dates = Array.from(new Set([...Object.keys(revMap), ...Object.keys(expMap)])).sort((a, b) => new Date(a) - new Date(b));
-    const cutoff = new Date();
-    if (timeRange !== "all") cutoff.setDate(cutoff.getDate() - Number(timeRange));
-    return dates.filter((d) => timeRange === "all" || new Date(d) >= cutoff).map((date) => ({
+    if (kind === "revenue") revMap[dateKey] = (revMap[dateKey] || 0) + val;
+    if (kind === "expense" || kind === "expenses" || kind === "cogs") {
+      expMap[dateKey] = (expMap[dateKey] || 0) + val;
+    }
+  });
+
+  const dates = Array.from(new Set([...Object.keys(revMap), ...Object.keys(expMap)]))
+    .sort((a, b) => new Date(a) - new Date(b));
+
+  const cutoff = new Date();
+  if (timeRange !== "all") cutoff.setDate(cutoff.getDate() - Number(timeRange));
+
+  return dates
+    .filter((d) => timeRange === "all" || new Date(d) >= cutoff)
+    .map((date) => ({
       date,
       revenue: revMap[date] || 0,
-      netProfit: (revMap[date] || 0) - (expMap[date] || 0)
+      netProfit: (revMap[date] || 0) - (expMap[date] || 0),
     }));
-  };
+};
    const chartData = withMA7(buildChartData());
  
 
@@ -232,10 +232,12 @@ const ChartTooltip = ({ active, label, payload }) => {
 
   
   {/*COGS*/}
-  <motion.div className="bg-[#1a1e27] p-6 rounded-2xl shadow-lg" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}>
-    <h3 className="text-xl font-semibold mb-2">⚙️ COGS</h3>
-    <p className={`text-2xl font-bold ${COGS >= 0 ? 'text-green-400' : 'text-red-400'}`}>${COGS.toLocaleString()}</p>
-  </motion.div>
+ <motion.div className="bg-[#1a1e27] p-6 rounded-2xl shadow-lg" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}>
+  <h3 className="text-xl font-semibold mb-2">⚙️ COGS</h3>
+  <p className={`text-2xl font-bold ${totalCOGS >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+    {totalCOGS.toLocaleString(undefined, { style: "currency", currency: "USD" })}
+  </p>
+</motion.div>
   {/* CAC */}
   <motion.div
     className="bg-[#1a1e27] p-6 rounded-2xl shadow-lg"

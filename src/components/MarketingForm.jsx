@@ -1,5 +1,6 @@
 // src/components/MarketingForm.jsx (drop-in)
 import { useState } from "react";
+import { createRecord } from "../lib/api";
 
 function MarketingForm({ onSuccess }) {
   const [marketingSpend, setMarketingSpend] = useState("");
@@ -28,35 +29,25 @@ function MarketingForm({ onSuccess }) {
       category: "marketing",
       note: "",                     // optional, fill from a textarea later if you want
     };
-
-    setLoading(true);
-    try {
-      const res = await fetch("/api/records", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-
-      if (!res.ok) {
-        const text = await res.text();
-        console.error("❌ POST /api/records failed:", res.status, text);
-        alert(`Server error (${res.status}): ${text || "Bad Request"}`);
-        return;
-      }
-
-      const saved = await res.json();
-      console.log("✅ Saved marketing record:", saved);
-      if (typeof onSuccess === "function") onSuccess(saved);
-
-      // reset
-      setMarketingSpend("");
-      setNewCustomers("");
-    } catch (err) {
-      console.error("❌ Failed to save marketing data:", err);
-      alert("Network or server error. Check the server console.");
-    } finally {
-      setLoading(false);
-    }
+   setLoading(true);
+   try {
+     const saved = await createRecord({
+       key: "marketing",
+       value: spend,
+       marketingSpend: spend,
+       newCustomers: customers,
+       date: new Date().toISOString(),
+       category: "marketing",
+        note: "",
+     });
+     onSuccess?.(saved);
+     setMarketingSpend("");
+     setNewCustomers("");
+   } catch (err) {
+     alert(err.message || "Failed to save.");
+   } finally {
+     setLoading(false);
+   }
   };
 
   return (

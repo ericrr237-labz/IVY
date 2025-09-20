@@ -5,19 +5,19 @@ function FAQ() {
 
   const faqs = [
     {
-      question: "How long does it take to implement AIVI?",
+      question: "How long does it take to implement IVY?",
       answer: "On average, most clients go live in 2-4 weeks depending on complexity. Our team handles everything for a smooth rollout."
     },
     {
-      question: "Can AIVI integrate with my existing tools?",
-      answer: "Yes. AIVI is designed to work with your current CRMs, email marketing platforms, and task systems so you don't lose progress."
+      question: "Can IVY integrate with my existing tools?",
+      answer: "Yes. IVY is designed to work with your current CRMs, email marketing platforms, and task systems so you don't lose progress."
     },
     {
       question: "Is this a one-time setup or ongoing support?",
-      answer: "AIVI includes ongoing support and optimization. We stay with you to ensure your system adapts and scales as you grow."
+      answer: "IVY includes ongoing support and optimization. We stay with you to ensure your system adapts and scales as you grow."
     },
     {
-      question: "What type of businesses benefit most from AIVI?",
+      question: "What type of businesses benefit most from IVY?",
       answer: "Service-based businesses, agencies, consultancies, and fast-growing online brands see the biggest impact and fastest ROI."
     }
   ];

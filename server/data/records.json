@@ -1,5 +1,115 @@
 [
   {
+    "id": "349c0ead-9a21-407a-9c24-7478b1e679dc",
+    "createdAt": "2025-09-13T23:21:36.303Z",
+    "type": "expenses",
+    "value": 130000,
+    "label": "",
+    "note": "",
+    "key": "expenses",
+    "marketingSpend": null,
+    "newCustomers": null
+  },
+  {
+    "id": "f974a768-c73e-4ffb-8898-3ce89e210d7b",
+    "createdAt": "2025-09-13T23:21:20.215Z",
+    "type": "expenses",
+    "value": 50000,
+    "label": "",
+    "note": "",
+    "key": "expenses",
+    "marketingSpend": null,
+    "newCustomers": null
+  },
+  {
+    "id": "fe5be401-cd31-468b-9098-ce0d9345aeae",
+    "createdAt": "2025-09-13T23:21:14.959Z",
+    "type": "expenses",
+    "value": 10000,
+    "label": "",
+    "note": "",
+    "key": "expenses",
+    "marketingSpend": null,
+    "newCustomers": null
+  },
+  {
+    "id": "276e3589-f455-4f55-8515-cc0ec7a38359",
+    "createdAt": "2025-09-13T23:21:08.879Z",
+    "type": "expenses",
+    "value": 433,
+    "label": "",
+    "note": "",
+    "key": "expenses",
+    "marketingSpend": null,
+    "newCustomers": null
+  },
+  {
+    "id": "998c336b-f5ec-4847-ab45-cffb41409436",
+    "createdAt": "2025-09-12T22:37:36.845Z",
+    "type": "cogs",
+    "value": 4324,
+    "label": "",
+    "note": "",
+    "key": "cogs",
+    "marketingSpend": null,
+    "newCustomers": null
+  },
+  {
+    "id": "43f7ef2b-06d4-4722-9e37-e0775c61b873",
+    "createdAt": "2025-09-12T22:37:33.652Z",
+    "type": "cogs",
+    "value": 3423,
+    "label": "",
+    "note": "",
+    "key": "cogs",
+    "marketingSpend": null,
+    "newCustomers": null
+  },
+  {
+    "id": "3f450258-93bd-40c2-8b84-a174e30418b7",
+    "createdAt": "2025-09-12T22:37:28.873Z",
+    "type": "cogs",
+    "value": 4333,
+    "label": "",
+    "note": "",
+    "key": "cogs",
+    "marketingSpend": null,
+    "newCustomers": null
+  },
+  {
+    "id": "d9c9c545-acfd-44cc-ac09-92ea816f0327",
+    "createdAt": "2025-09-12T22:37:21.502Z",
+    "type": "expenses",
+    "value": 33,
+    "label": "",
+    "note": "",
+    "key": "expenses",
+    "marketingSpend": null,
+    "newCustomers": null
+  },
+  {
+    "id": "c7838818-28b4-44e3-b915-da5ba8066a60",
+    "createdAt": "2025-09-12T22:37:16.103Z",
+    "type": "marketing",
+    "value": 434,
+    "label": "",
+    "note": "",
+    "key": "marketing",
+    "marketingSpend": 434,
+    "newCustomers": 3
+  },
+  {
+    "id": "4d0197dd-a821-4985-b969-d40aff2edfa4",
+    "createdAt": "2025-09-12T22:37:09.751Z",
+    "type": "marketing",
+    "value": 434,
+    "label": "",
+    "note": "",
+    "key": "marketing",
+    "marketingSpend": 434,
+    "newCustomers": 3
+  },
+  {
     "id": "7438dab4-7fb7-4149-b322-767efca398f5",
     "createdAt": "2025-09-02T05:43:40.578Z",
     "type": "revenue",

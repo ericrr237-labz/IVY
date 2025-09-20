@@ -7,25 +7,49 @@ export default function Login() {
   const [isLoggedIn, setIsLoggedIn] = useState(!!localStorage.getItem("auth"));
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const API_BASE = (process.env.REACT_APP_API_BASE || "http://localhost:5001").replace(/\/+$/, "");
+  const LOGIN_URL = `${API_BASE}/api/auth/login`;
 
   if (isLoggedIn) {
     return <Navigate to="/dashboard" />;
   }
 
-  const handleLogin = (e) => {
-    e.preventDefault();
-    // TODO: replace with real auth later
-    if (email === "admin@aivi.com" && password === "password") {
-      localStorage.setItem("auth", "1");
-      setIsLoggedIn(true);
-    } else {
-      alert("Invalid credentials");
+ const handleLogin = async (e) => {
+  e.preventDefault();
+  try {
+    const res = await fetch(LOGIN_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        email: String(email).trim().toLowerCase(), // normalize email
+        password, // do NOT trim passwords
+      }),
+      credentials: "include", // optional if you set cookies; harmless otherwise
+    });
+
+    const json = await res.json().catch(() => ({}));
+    if (!res.ok || !json?.ok) {
+      throw new Error(json?.error || `Login failed (${res.status})`);
     }
-  };
+
+    // Save tokens (adjust keys to match your backend response shape)
+    // json.tokens.access / json.tokens.refresh
+    localStorage.setItem("auth", JSON.stringify({
+      user: json.user,
+      tokens: json.tokens,
+      activeOrgId: json.user?.activeOrgId
+    }));
+
+    setIsLoggedIn(true);
+  } catch (err) {
+    console.error("[Login] error:", err);
+    alert("Invalid credentials");
+  }
+};
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-black to-[#0f1115] text-white flex flex-col justify-center items-center p-6">
-      <h1 className="text-5xl font-bold mb-4 text-blue-500">Login to AIVI</h1>
+      <h1 className="text-5xl font-bold mb-4 text-blue-500">Login to IVY</h1>
       <p className="text-gray-400 mb-8 text-center max-w-md">
         Unlock your custom AI dashboard and start scaling your business.
       </p>

@@ -1,17 +1,25 @@
 // server/index.js
+import "dotenv/config"
+console.log("[ENV] JWT_SECRET present:", !!process.env.JWT_SECRET);
+console.log("[ENV] REFRESH_SECRET present:", !!process.env.JWT_REFRESH_SECRET);
 import express from "express";
 import cors from "cors";
 import fs from "fs";
 import path from "path";
 import metricsRoutes from "./routes/metrics.js";
 import askGPT from "./routes/askGPT.js"
-import "dotenv/config"
-import profileRoutes from "./routes/profile.js";
-import authRoutes from "./routes/auth.js";
+import authRouter from "./routes/auth.js";
 import feedbackRouter from "./routes/feedback.js";
 import marketingRouter from "./routes/marketing.js";
 import settingsRouter from "./routes/settings.js";
 import { fileURLToPath } from "url";
+import authAttach from "./Middleware/authAttach.js";
+import recordsRouter from "./routes/records.js";
+import metricsRouter from "./routes/metrics.js";
+import profileRoutes from "./routes/profile.js";
+import mongoose from "mongoose";
+import adminRouter from "./routes/admin.js";
+
 
 
 console.log("OPENAI_API_KEY length:", (process.env.OPENAI_API_KEY || "").length);
@@ -25,11 +33,33 @@ const FILE = path.join(DATA_DIR, "records.json");
 const app = express();
 
 
-app.use(cors());
+app.use(cors({
+  origin: "http://localhost:3000",  // your CRA dev server
+  credentials: true
+}));
+
+
+
+
+
 app.use(express.json({ limit: "10mb" }));
-app.use("/api/metrics", metricsRoutes);
-app.use("/api/profile", profileRoutes);
-app.use("/api/auth", authRoutes);
+
+
+// Mongo connect
+mongoose.connect(process.env.MONGO_URI).then(() => {
+  console.log("Mongo connected");
+}).catch(err => {
+  console.error("Mongo connect error:", err);
+  process.exit(1);
+});
+
+app.use("/api/auth", authRouter);
+
+app.use("/api", authAttach);
+app.use("/api/admin", adminRouter);
+app.use("/api/records", authAttach, recordsRouter);
+app.use("/api/metrics", authAttach, metricsRoutes);
+app.use("/api/profile", authAttach, profileRoutes);
 app.use("/api/feedback", feedbackRouter);
 app.use("/api/marketing", marketingRouter);
 app.use("/api/settings", settingsRouter);
@@ -50,6 +80,7 @@ const writeAll = (arr) => fs.writeFileSync(FILE, JSON.stringify(arr, null, 2));
 
 /* ---------- RECORDS ROUTES ---------- */
 // GET /api/records  -> list all
+
 app.get("/api/records", (req, res) => {
   res.json(readAll());
 });

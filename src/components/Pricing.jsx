@@ -11,7 +11,7 @@ function Pricing() {
     >
       <h1 className="text-5xl font-bold text-blue-500 mb-4 text-center">Pricing</h1>
       <p className="text-gray-400 text-lg max-w-2xl mx-auto mb-12 text-center">
-        AIVI offers fully custom AI solutions, tailored to your business needs and growth goals. Our services start at $3,500/month.
+        IVY offers fully custom AI solutions, tailored to your business needs and growth goals. Our services start at $3,500/month.
         Every system is designed to maximize revenue, automate tasks, and deliver an unforgettable client experience.
       </p>
 
@@ -25,7 +25,7 @@ function Pricing() {
         <div className="bg-[#1a1e27] p-6 rounded-xl shadow-lg hover:shadow-blue-500/30 hover:scale-105 transition transform duration-300 ease-in-out">
           <h2 className="text-xl font-semibold text-blue-400 mb-3">Scalable & Adaptive</h2>
           <p className="text-gray-300">
-            Whether you're a startup or an enterprise, AIVI scales with you — evolving as your operations and revenue grow.
+            Whether you're a startup or an enterprise, IVY scales with you — evolving as your operations and revenue grow.
           </p>
         </div>
         <div className="bg-[#1a1e27] p-6 rounded-xl shadow-lg hover:shadow-blue-500/30 hover:scale-105 transition transform duration-300 ease-in-out">

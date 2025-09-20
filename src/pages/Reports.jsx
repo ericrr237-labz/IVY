@@ -7,6 +7,8 @@ import Sidebar from "../components/Sidebar";
 
 const pretty = (n) =>
   (Number(n) || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const recType = (r) => (r?.key || r?.type || "").toLowerCase();
+const isExpenseLike = (r) => ["expense", "expenses"].includes(recType(r));
 
 export default function Reports() {
   const navigate = useNavigate();
@@ -41,25 +43,33 @@ export default function Reports() {
     }, []);
 
   const filtered = useMemo(() => {
-    if (filter === "all") return records;
-    return records.filter((r) => r.type === filter);
-  }, [records, filter]);
+   if (filter === "all") return records;
+   if (filter === "expenses") return records.filter(isExpenseLike);
+   return records.filter((r) => recType(r) === filter);
+ }, [records, filter]);
 
-  const totals = useMemo(() => {
-    const rev = records.filter((r) => r.type === "revenue").reduce((s, r) => s + Number(r.value || 0), 0);
-    const exp = records.filter((r) => r.type === "expenses").reduce((s, r) => s + Number(r.value || 0), 0);
-    const cogs = records.filter((r) => r.type === "cogs").reduce((s, r) => s + Number(r.value || 0), 0);
-    return { rev, exp, cogs, net: rev - (exp + cogs) };
-  }, [records]);
-
+   const totals = useMemo(() => {
+   let rev = 0, exp = 0, cogs = 0;
+   for (const r of records) {
+     const t = recType(r);
+     const v = Number(r.value || 0);
+     if (t === "revenue") rev += v;
+     else if (isExpenseLike(r)) exp += v;
+     else if (t === "cogs") cogs += v;
+   }
+   return { rev, exp, cogs, net: rev - (exp + cogs) };
+ }, 
+ 
+ [records]);
   const exportCSV = () => {
-    const headers = ["date","type","label","value"];
-    const rows = filtered.map(r => ([
-      r.createdAt ? new Date(r.createdAt).toLocaleString() : "",
-      r.type || "",
-      r.label || r.note || "",
-      Number(r.value || 0)
-    ]));
+ const headers = ["date","type","label","value"];
+ const rows = filtered.map(r => ([
+   r.date ? new Date(r.date).toLocaleString() :
+            r.createdAt ? new Date(r.createdAt).toLocaleString() : "",
+   recType(r),
+   r.label || r.note || r.key || "",
+   Number(r.value || 0)
+ ]));
     const csv = [headers, ...rows].map(a => a.map(v => `"${String(v).replace(/"/g,'""')}"`).join(",")).join("\n");
     const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
@@ -128,9 +138,11 @@ export default function Reports() {
             ) : (
               filtered.map(r => (
                 <div key={r._id || r.id} className="grid grid-cols-4 px-4 py-2 text-sm">
-                  <div>{r.createdAt ? new Date(r.createdAt).toLocaleDateString() : "-"}</div>
-                  <div className="capitalize">{r.type || "-"}</div>
-                  <div className="truncate">{r.label || r.note || "-"}</div>
+                  <div>{r.date ? new Date(r.date).toLocaleDateString()
+                  : r.createdAt ? new Date(r.createdAt).toLocaleDateString()
+                  : "-"}</div>
+                  <div className="capitalize">{recType(r) || "-"}</div>
+                  <div className="truncate">{r.label || r.note || r.key || "-"}</div>
                   <div className="text-right">${pretty(r.value)}</div>
                 </div>
               ))

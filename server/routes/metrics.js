@@ -1,118 +1,163 @@
 // server/routes/metrics.js
 import express from "express";
-import fs from "fs";
-import path from "path";
-import { fileURLToPath } from "url";
+import Record from "../models/Record.js"; // Mongo-only
+import mongoose from "mongoose"; // ADD
 
+
+
+const oid = (id) => new mongoose.Types.ObjectId(id); // ADD
 const router = express.Router();
+const prependOrgMatch = (pipeline, orgId) => [{ $match: { orgId: oid(orgId) } }, ...pipeline]; // ADD
 
-// Resolve path to server/data/records.json (works regardless of CWD)
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-const DATA_DIR = path.resolve(__dirname, "..", "data");
-const FILE = path.join(DATA_DIR, "records.json");
+/* ------------------------------ Helpers ------------------------------ */
 
-// Safe read helper
-const readAll = () => {
-  try {
-    if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
-    if (!fs.existsSync(FILE)) fs.writeFileSync(FILE, "[]", "utf-8");
-    const raw = fs.readFileSync(FILE, "utf-8");
-    const arr = JSON.parse(raw);
-    return Array.isArray(arr) ? arr : [];
-  } catch (e) {
-    console.error("metrics.readAll error:", e);
-    return [];
+function parseDateInput(v) {
+  if (!v) return null;
+  const d = new Date(v);
+  return isNaN(d.getTime()) ? null : d;
+}
+
+function normalizeNumber(n) {
+  if (typeof n === "number") return n;
+  const x = Number(n);
+  return Number.isFinite(x) ? x : 0;
+}
+
+async function fetchByKey({ key, orgId, from, to }) {
+  const q = { key };
+  if (orgId) q.orgId = orgId; // harmless if you haven’t added orgs yet
+  if (from || to) {
+    q.date = {};
+    if (from) q.date.$gte = farom;
+    if (to)   q.date.$lte = to;
   }
-};
+  // lean() for speed; we only need value & date
+  return Record.find(q).select({ value: 1, date: 1 }).lean();
+}
 
-// GET /api/metrics/cltv
-router.get("/cltv", async (req, res) => {
+const sumValues = (rows) => rows.reduce((acc, r) => acc + normalizeNumber(r.value), 0);
+
+/* ------------------------------ Routes ------------------------------ */
+
+/**
+ * GET /api/metrics/gross-margin?from=YYYY-MM-DD&to=YYYY-MM-DD
+ * Gross Margin = (Revenue - COGS) / Revenue
+ */
+router.get("/gross-margin", async (req, res) => {
   try {
-    const records = readAll();
+    const orgId = req.auth?.orgId || null; // optional
+    const from = parseDateInput(req.query.from);
+    const to   = parseDateInput(req.query.to);
 
-    // Your schema (from index.js):
-    // { id, createdAt, type: "revenue" | "expenses" | "cogs" | "cac" | ...,
-    //   value: Number, marketingSpend?: Number, newCustomers?: Number, ... }
+    const [revenues, cogs] = await Promise.all([
+      fetchByKey({ key: "revenue", orgId, from, to }),
+      fetchByKey({ key: "cogs",     orgId, from, to }), // change "cogs" if you use a different key
+    ]);
 
-    const safeNum = (n) => (typeof n === "number" && !Number.isNaN(n) ? n : 0);
-
-    let totalRevenue = 0;
-    let totalExpenses = 0;     // NOTE: type is "expenses" (plural) in your code
-    let totalCOGS = 0;
-
-    let firstRevenueDate = null;
-    let lastRevenueDate = null;
-
-    let totalNewCustomers = 0; // derive "customers" from summed newCustomers entries (if you use CAC forms)
-
-    for (const r of records) {
-      const val = safeNum(r.value);
-
-      if (r.type === "revenue") {
-        totalRevenue += val;
-
-        // lifespan window using revenue timestamps
-        const d = r.createdAt ? new Date(r.createdAt) : null;
-        if (d && !isNaN(d.getTime())) {
-          if (!firstRevenueDate || d < firstRevenueDate) firstRevenueDate = d;
-          if (!lastRevenueDate || d > lastRevenueDate) lastRevenueDate = d;
-        }
-      }
-
-      if (r.type === "expenses") totalExpenses += val; // plural
-      if (r.type === "cogs") totalCOGS += val;
-
-      // If you’ve been storing marketing/new customer events, count them
-      if (typeof r.newCustomers === "number" && !Number.isNaN(r.newCustomers)) {
-        totalNewCustomers += r.newCustomers;
-      }
-    }
-
-    // Derive customers
-    // Prefer your real "newCustomers" stream if present; otherwise fallback to 1 to avoid /0.
-    const customers = totalNewCustomers > 0 ? totalNewCustomers : 1;
-
-    // Lifespan (months) across the revenue window; default to 12 if no valid dates
-    const monthIndex = (d) => d.getUTCFullYear() * 12 + d.getUTCMonth();
-    let avgLifespanMonths = 12;
-    if (firstRevenueDate && lastRevenueDate) {
-      const span = Math.max(1, monthIndex(lastRevenueDate) - monthIndex(firstRevenueDate) + 1);
-      avgLifespanMonths = span; // one overall window; simple & stable until you track churn
-    }
-
-    // ARPU & Margin
-    const arpu = totalRevenue > 0 ? totalRevenue / customers : 0;
-    const grossMargin =
-      totalRevenue > 0
-        ? (totalRevenue - totalExpenses - totalCOGS) / totalRevenue
-        : 0;
-
-    // CLTV
-    const cltv = arpu * grossMargin * avgLifespanMonths;
+    const revenueTotal = sumValues(revenues);
+    const cogsTotal    = sumValues(cogs);
+    const grossProfit  = revenueTotal - cogsTotal;
+    const grossMargin  = revenueTotal > 0 ? grossProfit / revenueTotal : 0;
 
     return res.json({
-      cltv: Number.isFinite(cltv) ? cltv : 0,
+      ok: true,
+      metric: "gross_margin",
+      value: grossMargin, // 0..1
       breakdown: {
-        totalRevenue,
-        totalExpenses,
-        totalCOGS,
-        customers,
-        avgLifespanMonths,
-        arpu,
-        grossMargin,
-        window: {
-          firstRevenueDate: firstRevenueDate?.toISOString() || null,
-          lastRevenueDate: lastRevenueDate?.toISOString() || null,
+        revenue: revenueTotal,
+        cogs: cogsTotal,
+        grossProfit,
+        range: {
+          from: from ? from.toISOString() : null,
+          to:   to   ? to.toISOString()   : null,
         },
+        source: "mongo",
+        orgScoped: Boolean(orgId),
       },
     });
-  } catch (err) {
-    console.error("CLTV error:", err);
-    return res.status(500).json({
-      error: "Error calculating CLTV",
-      detail: err?.message || String(err),
+  } catch (e) {
+    console.error("gross-margin error:", e);
+    return res.status(500).json({ ok: false, error: e?.message || "Unknown error" });
+  }
+});
+
+/**
+ * GET /api/metrics/cltv?from=YYYY-MM-DD&to=YYYY-MM-DD
+ * Simple CLTV = Total Revenue / New Customers
+ */
+router.get("/cltv", async (req, res) => {
+  try {
+    const orgId = req.auth?.orgId || null;
+    const from = parseDateInput(req.query.from);
+    const to   = parseDateInput(req.query.to);
+
+    const [revenues, newCustomers] = await Promise.all([
+      fetchByKey({ key: "revenue",      orgId, from, to }),
+      fetchByKey({ key: "newCustomers", orgId, from, to }),
+    ]);
+
+    const totalRevenue = sumValues(revenues);
+    const totalNew     = sumValues(newCustomers);
+    const cltv         = totalNew > 0 ? totalRevenue / totalNew : 0;
+
+    return res.json({
+      ok: true,
+      metric: "CLTV",
+      value: cltv,
+      breakdown: {
+        totalRevenue,
+        totalNewCustomers: totalNew,
+        range: {
+          from: from ? from.toISOString() : null,
+          to:   to   ? to.toISOString()   : null,
+        },
+        source: "mongo",
+        orgScoped: Boolean(orgId),
+      },
     });
+  } catch (e) {
+    console.error("CLTV error:", e);
+    return res.status(500).json({ ok: false, error: e?.message || "Unknown error" });
+  }
+});
+
+/**
+ * GET /api/metrics/cac?from=YYYY-MM-DD&to=YYYY-MM-DD
+ * CAC = Marketing Spend / New Customers
+ */
+router.get("/cac", async (req, res) => {
+  try {
+    const orgId = req.auth?.orgId || null;
+    const from = parseDateInput(req.query.from);
+    const to   = parseDateInput(req.query.to);
+
+    const [marketing, newCustomers] = await Promise.all([
+      fetchByKey({ key: "marketing",    orgId, from, to }), // change if your key is different
+      fetchByKey({ key: "newCustomers", orgId, from, to }),
+    ]);
+
+    const marketingSpend = sumValues(marketing);
+    const totalNew       = sumValues(newCustomers);
+    const cac            = totalNew > 0 ? marketingSpend / totalNew : 0;
+
+    return res.json({
+      ok: true,
+      metric: "CAC",
+      value: cac,
+      breakdown: {
+        marketingSpend,
+        totalNewCustomers: totalNew,
+        range: {
+          from: from ? from.toISOString() : null,
+          to:   to   ? to.toISOString()   : null,
+        }, 
+        source: "mongo",
+        orgScoped: Boolean(orgId),
+      },
+    });
+  } catch (e) {
+    console.error("CAC error:", e);
+    return res.status(500).json({ ok: false, error: e?.message || "Unknown error" });
   }
 });
 
