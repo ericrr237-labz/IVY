@@ -7,7 +7,7 @@ export default function Login() {
   const [isLoggedIn, setIsLoggedIn] = useState(!!localStorage.getItem("auth"));
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const API_BASE = (process.env.REACT_APP_API_BASE || "http://localhost:5001").replace(/\/+$/, "");
+  const API_BASE = (process.env.REACT_APP_API_BASE);
   const LOGIN_URL = `${API_BASE}/api/auth/login`;
 
   if (isLoggedIn) {

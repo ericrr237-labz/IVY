@@ -33,12 +33,32 @@ const FILE = path.join(DATA_DIR, "records.json");
 const app = express();
 
 
+const ORIGINS = (process.env.CLIENT_ORIGIN || "")
+  .split(",")
+  .map(s => s.trim())
+  .filter(Boolean);
+
+// helper: is this origin allowed?
+function isAllowedOrigin(origin) {
+  if (!origin) return true; // server-to-server, curl, health checks
+  if (ORIGINS.includes(origin)) return true;
+  // allow Vercel previews
+  if (origin.endsWith(".vercel.app")) return true;
+  return false;
+}
+
+// so caches don't combine responses for different origins
+app.use((req, res, next) => { res.setHeader("Vary", "Origin"); next(); });
+
 app.use(cors({
-  origin: "http://localhost:3000",  // your CRA dev server
-  credentials: true
+  origin: (origin, cb) => cb(null, isAllowedOrigin(origin)),
+  credentials: true,
+  methods: ["GET","POST","PUT","PATCH","DELETE","OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"]
 }));
 
-
+// ensure all routes respond to preflight
+app.options("*", cors());
 
 
 
@@ -126,4 +146,4 @@ app.delete("/api/records/:id", (req, res) => {
 /* ------------------------------------ */
 
 const PORT = process.env.PORT || 5001;
-app.listen(PORT, () => console.log(`API running on http://localhost:${PORT}`));
+app.listen(PORT, () => console.log(`API running`));
