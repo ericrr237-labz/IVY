@@ -1,7 +1,7 @@
 // server/index.js
 import "dotenv/config"
-console.log("[ENV] JWT_SECRET present:", !!process.env.JWT_SECRET);
-console.log("[ENV] REFRESH_SECRET present:", !!process.env.JWT_REFRESH_SECRET);
+console.log("[ENV] ACCESS_SECRET present:", !!process.env.ACCESS_SECRET);
+console.log("[ENV] REFRESH_SECRET present:", !!process.env.REFRESH_SECRET);
 import express from "express";
 import cors from "cors";
 import fs from "fs";
